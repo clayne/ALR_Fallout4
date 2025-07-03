@@ -28,40 +28,30 @@ PathDataParent* pathData = PathDataCreate();
 
 extern "C"
 {
-	__declspec(dllexport) bool F4SEPlugin_Query(const F4SEInterface* f4se, PluginInfo* info)
+	__declspec(dllexport) F4SEPluginVersionData F4SEPlugin_Version =
 	{
-		char logPath[MAX_PATH];
-		sprintf_s(logPath, MAX_PATH, "%s%s.log", "\\My Games\\Fallout4\\F4SE\\", PLUGIN_NAME);
-		glog.OpenRelative(CSIDL_MYDOCUMENTS, logPath);
+		F4SEPluginVersionData::kVersion,
 
-		_MESSAGE("%s", PLUGIN_NAME, PLUGIN_VERSION);
+		PLUGIN_VERSION,
+		"ALR",
+		"Hudd",
 
-		info->infoVersion = PluginInfo::kInfoVersion;
-		info->name = PLUGIN_NAME;
-		info->version = PLUGIN_VERSION;
+		1,	// not version independent
+		1,	// not version independent (extended field)
+		{ CURRENT_RELEASE_RUNTIME, 0 },	// compatible with 1.10.980
 
-		g_pluginHandle = f4se->GetPluginHandle();
-
-		if (f4se->runtimeVersion < RUNTIME_VERSION_1_10_163) {
-			_MESSAGE("ERROR: Version ", CURRENT_RELEASE_RUNTIME, " Required!");
-			return false;
-		}
-
-		if (f4se->isEditor)
-		{
-			_MESSAGE("ERROR: isEditor Is True");
-			return false;
-		}
-
-		return true;
-	}
+		1,	// works with any version of the script extender. you probably do not need to put anything here
+	};
 
 	__declspec(dllexport) bool F4SEPlugin_Load(const F4SEInterface* f4se)
 	{
 		_MESSAGE("%s loaded", PLUGIN_NAME);
 
 		PathBuilderParent* PBinst = PathBuilderCreate(*pathData);
+		_MESSAGE("%s created path data", PLUGIN_NAME);
+
 		ImageConvertParent* IMinst = ImageConvertCreate(*pathData);
+		_MESSAGE("%s converted all images", PLUGIN_NAME);
 
 		delete PBinst;
 		delete IMinst;
@@ -95,7 +85,8 @@ BOOL WINAPI DllMain(
 
 		PathDestoryerParent* PDinst = PathDestoryerCreate(*pathData);
 		delete PDinst;
-		delete &pathData;
+		delete& pathData;
+		_MESSAGE("%s destroyed all images/paths", PLUGIN_NAME);
 		// Perform any necessary cleanup.
 		break;
 	}
